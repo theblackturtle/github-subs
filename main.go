@@ -29,11 +29,11 @@ func main() {
 	flag.Parse()
 
 	if APIKey == "" {
-		fmt.Fprintf(os.Stderr, "Please check your api key")
+		fmt.Fprintln(os.Stderr, "Please check your api key")
 		os.Exit(1)
 	}
 	if domain == "" {
-		fmt.Fprintf(os.Stderr, "Please check your domain")
+		fmt.Fprintln(os.Stderr, "Please check your domain")
 		os.Exit(1)
 	}
 	headers := map[string]string{
@@ -65,6 +65,8 @@ func main() {
 	}
 
 	urlFilter := stringset.NewStringFilter()
+
+loop:
 	for i := 1; i <= 10; i++ {
 		limiter.CheckRateLimit()
 
@@ -78,11 +80,12 @@ func main() {
 		}
 		page, err := http.RequestWebPage(url, nil, headers, ",", "")
 		if err != nil {
-			panic(err)
+			fmt.Fprintln(os.Stderr, err)
+			break loop
 		}
-		err = json.Unmarshal([]byte(page), &result)
-		if err != nil {
-			panic(err)
+		if err := json.Unmarshal([]byte(page), &result); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			break loop
 		}
 		for _, item := range result.Items {
 			if t := modifyURL(item.URL); t != "" && !urlFilter.Duplicate(t) {

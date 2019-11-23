@@ -13,13 +13,8 @@ import (
 )
 
 const (
-	// UserAgent is the default user agent used by Amass during HTTP requests.
-	UserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"
-
-	// Accept is the default HTTP Accept header value used by Amass.
-	Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
-
-	// AcceptLang is the default HTTP Accept-Language header value used by Amass.
+	UserAgent  = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36"
+	Accept     = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
 	AcceptLang = "en-US,en;q=0.8"
 )
 
