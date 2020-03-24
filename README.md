@@ -10,3 +10,6 @@ Usage of ./github-subs:
   -delay int
         Delay each request (second) (default 7)
 ```
+
+## Credits:
+Almost get from Amass's source code
