@@ -62,7 +62,6 @@ func main() {
 
 	urlFilter := stringset.NewStringFilter()
 
-	errorAmount := 0
 loop:
 	for i := 1; i <= 100; i++ {
 		time.Sleep(time.Duration(delay) * time.Second)
@@ -78,13 +77,7 @@ loop:
 		page, err := http.RequestWebPage(url, nil, headers, ",", "")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
-			if errorAmount > 5 {
-				break loop
-			} else {
-				errorAmount++
-				continue
-			}
-
+			break loop
 		}
 		if err := json.Unmarshal([]byte(page), &result); err != nil {
 			fmt.Fprintln(os.Stderr, err)
