@@ -13,11 +13,10 @@ import (
 
 	"github.com/theblackturtle/github-subs/domainparser"
 	"github.com/theblackturtle/github-subs/http"
-	"github.com/theblackturtle/github-subs/ratelimiter"
 	"github.com/theblackturtle/github-subs/stringset"
 )
 
-var nameStripRE = regexp.MustCompile("^((20)|(25)|(2b)|(2f)|(3d)|(3a)|(40))+")
+var nameStripRE = regexp.MustCompile(`^u[0-9a-f]{4}|20|22|25|2b|2f|3d|3a|40`)
 
 func main() {
 	var APIKey string
@@ -46,12 +45,9 @@ func main() {
 	domainparser.AddDomain(domain)
 	re := domainparser.DomainRegex(domain)
 
-	// Setup Rate limiter
-	limiter := ratelimiter.NewRateLimiter()
-	limiter.SetRateLimit(time.Duration(delay) * time.Second)
-
 	nameFilter := stringset.NewStringFilter()
 	fetchNames := func(u string) {
+		time.Sleep(time.Duration(delay) * time.Second)
 		page, err := http.RequestWebPage(u, nil, nil, "", "")
 		if err != nil {
 			return
@@ -66,9 +62,10 @@ func main() {
 
 	urlFilter := stringset.NewStringFilter()
 
+	errorAmount := 0
 loop:
-	for i := 1; i <= 10; i++ {
-		limiter.CheckRateLimit()
+	for i := 1; i <= 100; i++ {
+		time.Sleep(time.Duration(delay) * time.Second)
 
 		url := buildURL(domain, i)
 		var result struct {
@@ -81,7 +78,13 @@ loop:
 		page, err := http.RequestWebPage(url, nil, headers, ",", "")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
-			break loop
+			if errorAmount > 5 {
+				break loop
+			} else {
+				errorAmount++
+				continue
+			}
+
 		}
 		if err := json.Unmarshal([]byte(page), &result); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -122,6 +125,8 @@ func cleanName(name string) string {
 	name = strings.TrimSpace(strings.ToLower(name))
 
 	for {
+		name = strings.Trim(name, "-")
+
 		if i := nameStripRE.FindStringIndex(name); i != nil {
 			name = name[i[1]:]
 		} else {
@@ -129,7 +134,6 @@ func cleanName(name string) string {
 		}
 	}
 
-	name = strings.Trim(name, "-")
 	// Remove dots at the beginning of names
 	if len(name) > 1 && name[0] == '.' {
 		name = name[1:]
